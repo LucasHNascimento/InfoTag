@@ -3,6 +3,10 @@ from firebase_admin import credentials, firestore, auth
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import bcrypt
+import json
+import os
+from pathlib import Path
+from threading import Lock
 from datetime import datetime, timedelta
 
 # --- 1. Configuração Inicial ---
@@ -13,10 +17,48 @@ CORS(app, resources={r"/api/*": {"origins": "*"}},
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-# Inicializa o Firebase Admin
-cred = credentials.Certificate('serviceAccountKey.json')
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+# A credencial de produção fica nas variáveis protegidas da hospedagem.
+# O arquivo local continua disponível para desenvolvimento.
+db = None
+firebase_lock = Lock()
+
+
+def initialize_firebase():
+    global db
+    if db is not None:
+        return
+    with firebase_lock:
+        if db is not None:
+            return
+        credential_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT_JSON')
+        if credential_json:
+            cred = credentials.Certificate(json.loads(credential_json))
+        else:
+            credential_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+            if not credential_path:
+                credential_path = str(Path(__file__).with_name('serviceAccountKey.json'))
+            cred = credentials.Certificate(credential_path)
+        try:
+            firebase_app = firebase_admin.get_app()
+        except ValueError:
+            firebase_app = firebase_admin.initialize_app(cred)
+        db = firestore.client(app=firebase_app)
+
+
+@app.before_request
+def require_firebase():
+    if request.method == 'OPTIONS':
+        return None
+    try:
+        initialize_firebase()
+    except Exception:
+        # Não expõe detalhes da credencial nem permite acesso sem configuração.
+        return jsonify({'error': 'Serviço temporariamente indisponível. Configure o Firebase na hospedagem.'}), 503
+
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'}), 200
 
 # --- 2. Rotas Públicas (Portal do Paciente) ---
 
