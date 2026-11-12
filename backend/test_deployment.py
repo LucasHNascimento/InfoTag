@@ -33,7 +33,10 @@ class DeploymentTests(unittest.TestCase):
              patch.object(backend.firebase_admin, 'get_app', side_effect=ValueError), \
              patch.object(backend.firebase_admin, 'initialize_app') as initialize, \
              patch.object(backend.firestore, 'client') as firestore_client:
-            self.assertEqual(self.client.get('/api/health').json, {'status': 'ok'})
+            firestore_client.return_value.project = 'test-only'
+            self.assertEqual(self.client.get('/api/health').json, {
+                'status': 'ok', 'projectId': 'test-only'
+            })
             self.assertEqual(self.client.get('/api/health').status_code, 200)
             self.assertEqual(self.client.get('/api/admin/users').status_code, 401)
             certificate.assert_called_once_with(service_account)

@@ -58,7 +58,7 @@ def require_firebase():
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'ok'}), 200
+    return jsonify({'status': 'ok', 'projectId': db.project}), 200
 
 # --- 2. Rotas Públicas (Portal do Paciente) ---
 
