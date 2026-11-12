@@ -1,14 +1,14 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// Cole o objeto firebaseConfig que você copiou do console
+// Configuração pública do aplicativo Web (não é a chave privada do servidor).
 const firebaseConfig = {
-  apiKey: "AIzaSyDo4b3r15Vlxp1joRd31GBsB7hIaWZmr0c",
-  authDomain: "info-tag.firebaseapp.com",
-  projectId: "info-tag",
-  storageBucket: "info-tag.firebasestorage.app",
-  messagingSenderId: "34901577805",
-  appId: "1:34901577805:web:da2d72e0deceb8aa308c04"
+  apiKey: "AIzaSyDPzPoT2xfm7GDn-wNztI96WdEzSVB10qE",
+  authDomain: "info-tag-fcc7a.firebaseapp.com",
+  projectId: "info-tag-fcc7a",
+  storageBucket: "info-tag-fcc7a.firebasestorage.app",
+  messagingSenderId: "478269060393",
+  appId: "1:478269060393:web:4c34259f19ec31fc1a3338"
 };
 
 // Inicializa o Firebase
